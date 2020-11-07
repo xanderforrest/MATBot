@@ -1,14 +1,30 @@
 import discord
+from discord.ext import commands
 from secrets import token
 
 
-class STEPBot(discord.Client):
-    async def on_ready(self):
-        print('Logged on as {0}!'.format(self.user))
+def get_prefix(bot, message):
+    prefixes = ['>']
 
-    async def on_message(self, message):
-        print('Message from {0.author}: {0.content}'.format(message))
+    if not message.guild:
+        return '>'
+
+    return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
-client = STEPBot()
-client.run(token)
+initial_extensions = ['cogs.mat']
+
+bot = commands.Bot(command_prefix=get_prefix, description='MAT Bot')
+
+if __name__ == '__main__':
+    for extension in initial_extensions:
+        bot.load_extension(extension)
+
+
+@bot.event
+async def on_ready():
+    print(f'\n\nLogged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n')
+    print(f'Successfully logged in and booted...!')
+
+
+bot.run(token, bot=True, reconnect=True)
